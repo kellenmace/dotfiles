@@ -1,11 +1,14 @@
 # Path to oh-my-zsh installation.
 export ZSH="/Users/kellen/.oh-my-zsh"
 
-# ZSH theme - see https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
-ZSH_THEME="robbyrussell"
+# Remove "kellen@Kellens-MacBook-Pro" from command prompt.
+DEFAULT_USER=$USER
 
-# ZSH plugins. Path: ~/.oh-my-zsh/plugins/*
-plugins=( z )
+# ZSH theme. Path: ~/.oh-my-zsh/themes
+ZSH_THEME="agnoster"
+
+# ZSH plugins. Path: ~/.oh-my-zsh/plugins
+plugins=( z zsh-syntax-highlighting )
 # Maybe add this, if it's not too laggy: https://github.com/zsh-users/zsh-autosuggestions
 
 # Load oh-my-zsh.
@@ -40,6 +43,7 @@ function t() {
 # Vagrant
 alias vu="vagrant up"
 alias vh="vagrant halt"
+alias vr="vagrant reload"
 alias vs="vagrant status"
 alias vgs="vagrant global status"
 alias vss="vagrant ssh"
@@ -132,4 +136,16 @@ function qtmono() {
 # Usage: finda whatever-part-you-remember
 function finda() {
   grep -i -a1 $@ ~/.zshrc | grep -v '^s*$' ;
+}
+
+# Harness
+alias deploy_staging="deploy_harness staging"
+alias deploy_prod="deploy_harness production"
+
+# Deploy Harness via Trellis
+# usage: deploy_harness <environment>
+function deploy_harness() {
+  cd /Users/kellen/Sites/harness-wordpress-app/trellis
+  ./bin/deploy.sh "$1" harnessup.com
+  cd $OLDPWD
 }
