@@ -14,6 +14,10 @@ plugins=( z zsh-syntax-highlighting )
 # Load oh-my-zsh.
 source $ZSH/oh-my-zsh.sh
 
+# Add PHP 7.4 to PATH.
+export PATH="/usr/local/opt/php@7.4/bin:$PATH"
+export PATH="/usr/local/opt/php@7.4/sbin:$PATH"
+
 # fzf settings. See https://github.com/junegunn/fzf.
 source ~/.fzf.zsh
 export FZF_DEFAULT_OPS="--extended" # Use fzf's extended regex matchers
@@ -45,7 +49,7 @@ alias vu="vagrant up"
 alias vh="vagrant halt"
 alias vr="vagrant reload"
 alias vs="vagrant status"
-alias vgs="vagrant global status"
+alias vgs="vagrant global-status"
 alias vss="vagrant ssh"
 
 # Git
@@ -53,14 +57,16 @@ alias ga="git add"
 alias gp="git push -v"
 alias gs="git status"
 alias gl="git log --format='%C(green)%h%Creset %ad %C(cyan)%an%Creset - %s%C(red)%d%Creset' --date=format:'%b %d'"
-alias gd="git diff --stat –color"
 alias gb="git for-each-ref --sort=committerdate refs/heads/ --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) (%(color:green)%(committerdate:relative)%(color:reset)) - %(authorname): %(color:red)%(objectname:short)%(color:reset) %(contents:subject)'"
 alias gco="git checkout"
 alias gcl="git clone -v"
-alias gf="git fetch; git merge --ff-only" # Fetch, then to a fast forward merge.
+alias gf="git fetch && git merge --ff-only" # Fetch, then to a fast forward merge.
 alias gm="git merge --no-ff"
-alias gp="git push"
-alias gbc="git branch | grep '^\*' | cut -d' ' -f2 | pbcopy" # Copy branch name to clipboard.
+alias gcbn="git branch | grep '^\*' | cut -d' ' -f2 | pbcopy" # Copy branch name to clipboard.
+
+# Gatsby
+alias gd="gatsby develop"
+alias gds="NODE_TLS_REJECT_UNAUTHORIZED=0 gatsby develop --https" # For local dev using a self-signed cert.
 
 # Git commit with a message.
 # Usage: gc "A very detailed commit message"
@@ -106,7 +112,7 @@ function gpb() {
 function gmi() {
   # If no branch name was provided
   if [ ! -n "$1" ]; then
-    echo "$(tput setaf 1)⚠️   Please provide the name of the branch to merge into.$(tput sgr0)"
+    echo "$(tput setaf 1)â ď¸   Please provide the name of the branch to merge into.$(tput sgr0)"
 		return 1
   fi
 
@@ -122,7 +128,7 @@ function chrome() {
   /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$1"
 }
 
-# Convert a stereo QuickTime recording to mono
+# Convert a stereo QuickTime recording to mono.
 # Usage: qtmono name-of-file.mov
 function qtmono() {
   basename=$(basename "$1")
@@ -139,13 +145,64 @@ function finda() {
 }
 
 # Harness
-alias deploy_staging="deploy_harness staging"
 alias deploy_prod="deploy_harness production"
+alias deploy_staging_v1="deploy_harness_v1 staging"
+alias deploy_prod_v1="deploy_harness_v1 production"
 
-# Deploy Harness via Trellis
+# Deploy Harness v2 via Trellis.
 # usage: deploy_harness <environment>
 function deploy_harness() {
+  cd /Users/kellen/Sites/harness-backend/trellis
+  ./bin/deploy.sh "$1" api.harnessup.com
+  cd $OLDPWD
+}
+
+# Deploy Harness v1 via Trellis.
+# usage: deploy_harness_v1 <environment>
+function deploy_harness_v1() {
   cd /Users/kellen/Sites/harness-wordpress-app/trellis
   ./bin/deploy.sh "$1" harnessup.com
+  cd $OLDPWD
+}
+
+# Vagrant up for Harness backend
+function hvu() {
+  cd /Users/kellen/Sites/harness-backend/trellis
+  yes | vagrant up
+  cd $OLDPWD
+}
+
+# Vagrant halt for Harness backend
+function hvh() {
+  cd /Users/kellen/Sites/harness-backend/trellis
+  vagrant halt
+  cd $OLDPWD
+}
+
+# Vagrant reload for Harness backend
+function hvr() {
+  cd /Users/kellen/Sites/harness-backend/trellis
+  vagrant halt
+  yes | vagrant up
+  cd $OLDPWD
+}
+
+# Create a tarball (.tar.gz) whose name matches the source dir.
+# usage: tarball some-directory
+function tarball() {
+  tar -zcvf "$1".tar.gz "$1"
+}
+
+# Un-archive and decompress a tarball (.tar.gz).
+# usage: decompress_tarball compressed-files.tar.gz
+function untarball() {
+  tar -zxvf "$1"
+}
+
+# Download song using youtube-dl and put it in Dropbox
+# usage: dl_song https://www.youtube.com/watch?v=hajBdDM2qdg
+function dl_song() {
+  cd ~/Dropbox/Downloaded\ Music/
+  youtube-dl -f "bestaudio[ext=m4a]" --embed-thumbnail --add-metadata "$1"
   cd $OLDPWD
 }
