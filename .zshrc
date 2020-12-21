@@ -8,15 +8,15 @@ DEFAULT_USER=$USER
 ZSH_THEME="agnoster"
 
 # ZSH plugins. Path: ~/.oh-my-zsh/plugins
-plugins=( z zsh-syntax-highlighting )
+plugins=( git-open z zsh-syntax-highlighting )
 # Maybe add this, if it's not too laggy: https://github.com/zsh-users/zsh-autosuggestions
 
 # Load oh-my-zsh.
 source $ZSH/oh-my-zsh.sh
 
-# Add PHP 7.4 to PATH.
-export PATH="/usr/local/opt/php@7.4/bin:$PATH"
-export PATH="/usr/local/opt/php@7.4/sbin:$PATH"
+# Add Homebrew's version of PHP to PATH.
+export PATH=/usr/local/bin/php:$PATH
+export PATH=/usr/local/sbin/php:$PATH
 
 # fzf settings. See https://github.com/junegunn/fzf.
 source ~/.fzf.zsh
@@ -112,7 +112,7 @@ function gpb() {
 function gmi() {
   # If no branch name was provided
   if [ ! -n "$1" ]; then
-    echo "$(tput setaf 1)â ď¸   Please provide the name of the branch to merge into.$(tput sgr0)"
+    echo "$(tput setaf 1)⚠️   Please provide the name of the branch to merge into.$(tput sgr0)"
 		return 1
   fi
 
@@ -120,6 +120,24 @@ function gmi() {
   destination_branch="$1"
 
   git pull origin "$current_branch"; git push origin "$current_branch"; git checkout "$destination_branch"; git pull origin "$destination_branch"; git merge "$current_branch" --no-ff; git push origin "$destination_branch";
+}
+
+# Fuzzy-find an alias/function in your .zshrc file.
+# Usage: finda whatever-part-you-remember
+function finda() {
+  grep -i -a1 $@ ~/.zshrc | grep -v '^s*$' ;
+}
+
+# Create a tarball (.tar.gz) whose name matches the source dir.
+# usage: tarball some-directory
+function tarball() {
+  tar -zcvf "$1".tar.gz "$1"
+}
+
+# Un-archive and decompress a tarball (.tar.gz).
+# usage: decompress_tarball compressed-files.tar.gz
+function untarball() {
+  tar -zxvf "$1"
 }
 
 # Open a webpage in Chrome
@@ -136,67 +154,6 @@ function qtmono() {
   extension="${basename##*.}"
 
   ffmpeg -i $1 -codec:v copy -af pan="mono: c0=FL" $filename-mono.$extension
-}
-
-# Fuzzy-find an alias/function in your .zshrc file.
-# Usage: finda whatever-part-you-remember
-function finda() {
-  grep -i -a1 $@ ~/.zshrc | grep -v '^s*$' ;
-}
-
-# Harness
-alias deploy_prod="deploy_harness production"
-alias deploy_staging_v1="deploy_harness_v1 staging"
-alias deploy_prod_v1="deploy_harness_v1 production"
-
-# Deploy Harness v2 via Trellis.
-# usage: deploy_harness <environment>
-function deploy_harness() {
-  cd /Users/kellen/Sites/harness-backend/trellis
-  ./bin/deploy.sh "$1" api.harnessup.com
-  cd $OLDPWD
-}
-
-# Deploy Harness v1 via Trellis.
-# usage: deploy_harness_v1 <environment>
-function deploy_harness_v1() {
-  cd /Users/kellen/Sites/harness-wordpress-app/trellis
-  ./bin/deploy.sh "$1" harnessup.com
-  cd $OLDPWD
-}
-
-# Vagrant up for Harness backend
-function hvu() {
-  cd /Users/kellen/Sites/harness-backend/trellis
-  yes | vagrant up
-  cd $OLDPWD
-}
-
-# Vagrant halt for Harness backend
-function hvh() {
-  cd /Users/kellen/Sites/harness-backend/trellis
-  vagrant halt
-  cd $OLDPWD
-}
-
-# Vagrant reload for Harness backend
-function hvr() {
-  cd /Users/kellen/Sites/harness-backend/trellis
-  vagrant halt
-  yes | vagrant up
-  cd $OLDPWD
-}
-
-# Create a tarball (.tar.gz) whose name matches the source dir.
-# usage: tarball some-directory
-function tarball() {
-  tar -zcvf "$1".tar.gz "$1"
-}
-
-# Un-archive and decompress a tarball (.tar.gz).
-# usage: decompress_tarball compressed-files.tar.gz
-function untarball() {
-  tar -zxvf "$1"
 }
 
 # Download song using youtube-dl and put it in Dropbox
