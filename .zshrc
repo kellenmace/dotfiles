@@ -1,5 +1,5 @@
 # Path to oh-my-zsh installation.
-export ZSH="/Users/kellen/.oh-my-zsh"
+export ZSH="/Users/kellen.mace/.oh-my-zsh"
 
 # Remove "kellen@Kellens-MacBook-Pro" from command prompt.
 DEFAULT_USER=$USER
@@ -7,12 +7,19 @@ DEFAULT_USER=$USER
 # ZSH theme. Path: ~/.oh-my-zsh/themes
 ZSH_THEME="agnoster"
 
+# Ignore these "Insecure completion-dependent directories" errors:
+# https://github.com/ohmyzsh/ohmyzsh/issues/9262
+ZSH_DISABLE_COMPFIX=true
+
 # ZSH plugins. Path: ~/.oh-my-zsh/plugins
 plugins=( git-open z zsh-syntax-highlighting )
 # Maybe add this, if it's not too laggy: https://github.com/zsh-users/zsh-autosuggestions
 
 # Load oh-my-zsh.
 source $ZSH/oh-my-zsh.sh
+
+# Add Homebrew's "sbin" directory to PATH.
+export PATH="/usr/local/sbin:$PATH"
 
 # Add Homebrew's version of PHP to PATH.
 export PATH=/usr/local/bin/php:$PATH
@@ -44,29 +51,20 @@ function t() {
   tree -I '.git|node_modules|bower_components|.DS_Store' --dirsfirst --filelimit 15 -L ${1:-3} -aC $2
 }
 
-# Vagrant
-alias vu="vagrant up"
-alias vh="vagrant halt"
-alias vr="vagrant reload"
-alias vs="vagrant status"
-alias vgs="vagrant global-status"
-alias vss="vagrant ssh"
-
 # Git
 alias ga="git add"
 alias gp="git push -v"
 alias gs="git status"
 alias gl="git log --format='%C(green)%h%Creset %ad %C(cyan)%an%Creset - %s%C(red)%d%Creset' --date=format:'%b %d'"
 alias gb="git for-each-ref --sort=committerdate refs/heads/ --format='%(HEAD) %(color:yellow)%(refname:short)%(color:reset) (%(color:green)%(committerdate:relative)%(color:reset)) - %(authorname): %(color:red)%(objectname:short)%(color:reset) %(contents:subject)'"
-alias gco="git checkout"
+alias gco="git switch"
 alias gcl="git clone -v"
 alias gf="git fetch && git merge --ff-only" # Fetch, then to a fast forward merge.
 alias gm="git merge --no-ff"
 alias gcbn="git branch | grep '^\*' | cut -d' ' -f2 | pbcopy" # Copy branch name to clipboard.
 
-# Gatsby
-alias gd="gatsby develop"
-alias gds="NODE_TLS_REJECT_UNAUTHORIZED=0 gatsby develop --https" # For local dev using a self-signed cert.
+# npm
+alias nrd="npm run dev"
 
 # Git commit with a message.
 # Usage: gc "A very detailed commit message"
@@ -83,13 +81,13 @@ function gca() {
 # Create a new branch off of the current branch.
 # Usage: gcb feature/my-new-branch
 function gcb() {
-  git fetch; git merge --ff-only; git checkout -b "$1"; git push -uv origin "$1";
+  git fetch; git merge --ff-only; git switch -c "$1"; git push -uv origin "$1";
 }
 
-# Create a new branch off of master.
+# Create a new branch off of main.
 # Usage: gcbm feature/my-new-branch
 function gcbm() {
-  git checkout master; git fetch; git merge --ff-only; git checkout -b "$1"; git push -uv origin "$1";
+  git switch main; git fetch; git merge --ff-only; git switch -c "$1"; git push -uv origin "$1";
 }
 
 # Check out a branch fuzzily using fzf.
@@ -99,7 +97,7 @@ function gcob() {
 	branches=$(git branch -a) &&
 	branch=$(echo "$branches" | fzf +s +m -e) &&
 	cmd=$(echo "$branch" | sed "s:.* remotes/origin/::" | sed "s:.* ::")
-	git checkout "$cmd"
+	git switch "$cmd"
 }
 
 # Get a branch's parent branch.
@@ -119,7 +117,7 @@ function gmi() {
   current_branch="$(git branch | grep \* | cut -d ' ' -f2)"
   destination_branch="$1"
 
-  git pull origin "$current_branch"; git push origin "$current_branch"; git checkout "$destination_branch"; git pull origin "$destination_branch"; git merge "$current_branch" --no-ff; git push origin "$destination_branch";
+  git pull origin "$current_branch"; git push origin "$current_branch"; git switch "$destination_branch"; git pull origin "$destination_branch"; git merge "$current_branch" --no-ff; git push origin "$destination_branch";
 }
 
 # Fuzzy-find an alias/function in your .zshrc file.
@@ -146,6 +144,12 @@ function chrome() {
   /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome "$1"
 }
 
+# Open a webpage in Arc
+# Usage: arc https://kellenmace.com
+function arc() {
+  /usr/bin/open -a Arc "$1"
+}
+
 # Convert a stereo QuickTime recording to mono.
 # Usage: qtmono name-of-file.mov
 function qtmono() {
@@ -160,6 +164,6 @@ function qtmono() {
 # usage: dl_song https://www.youtube.com/watch?v=hajBdDM2qdg
 function dl_song() {
   cd ~/Dropbox/Downloaded\ Music/
-  youtube-dl -f "bestaudio[ext=m4a]" --embed-thumbnail --add-metadata "$1"
+  yt-dlp -f 'ba' -x --audio-format m4a --embed-thumbnail --embed-metadata "$1"
   cd $OLDPWD
 }
