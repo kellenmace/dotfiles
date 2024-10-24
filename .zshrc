@@ -1,9 +1,15 @@
 # Path to oh-my-zsh installation.
 export ZSH="/Users/kellen.mace/.oh-my-zsh"
 
+function git_branch_name() {
+  branch=$(git symbolic-ref HEAD 2> /dev/null | awk 'BEGIN{FS="/"} {print $NF}')
+  if [ "$branch" ]; then
+    echo " (${branch})"
+  fi
+}
+
 # Customize prompt
-# PROMPT='%~ '
-PROMPT='%F{81}%~%f '
+PROMPT='%F{81}%~%f%F{163}$(git_branch_name) '
 
 # ZSH plugins. Path: ~/.oh-my-zsh/plugins
 plugins=( git-open z zsh-syntax-highlighting )
